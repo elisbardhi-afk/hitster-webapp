@@ -165,10 +165,12 @@ export async function startRoom(opts: { code: string }): Promise<GameRow> {
     seed: Math.floor(Math.random() * 1_000_000),
   });
 
-  // Preserve deviceMode from the lobby state.
+  // Preserve lobby-only fields that createGame does not include.
   const baseStateWithMode: GameState = {
     ...baseState,
     deviceMode: room.state.deviceMode ?? "per-device",
+    tagFilter: room.state.tagFilter ?? [],
+    categoryFilter: room.state.categoryFilter ?? [],
   };
 
   // Immediately draw the first song so player 1 can start.
