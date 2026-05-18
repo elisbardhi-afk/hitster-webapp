@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createRoomAction } from "./actions";
 import { listDecades } from "@/lib/songs";
 import { GameModeSelect } from "@/components/GameModeSelect";
@@ -17,6 +18,9 @@ export default async function CreateOnlineRoomPage({
         action={createRoomAction}
         className="w-full max-w-sm space-y-4 rounded-2xl border border-neutral-800 bg-neutral-900/50 p-6 mt-12"
       >
+        <Link href="/" className="text-xs text-neutral-500 hover:text-neutral-300">
+          ← back
+        </Link>
         <h1 className="text-xl font-semibold">Create a room</h1>
         <label className="block">
           <span className="text-sm text-neutral-300">Your nickname</span>
