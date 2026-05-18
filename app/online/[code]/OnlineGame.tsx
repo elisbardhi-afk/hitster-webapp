@@ -140,8 +140,8 @@ export function OnlineGame({ initialRoom, playerId, cards }: Props) {
 
   const canAct = isShared ? isHost : isMyTurn;
   const currentPlayer = state.players[state.currentPlayerIdx];
-  // Active timeline = current player's (shared mode shows whoever's turn it is);
-  // in per-device mode it's your own. Co-op overrides to players[0].
+  // Active timeline = current player's in both shared and per-device mode.
+  // Co-op overrides to players[0].
   const ownerIdx =
     state.variant === "coop"
       ? 0
