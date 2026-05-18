@@ -145,9 +145,7 @@ export function OnlineGame({ initialRoom, playerId, cards }: Props) {
   const ownerIdx =
     state.variant === "coop"
       ? 0
-      : isShared
-        ? state.currentPlayerIdx
-        : myIdx;
+      : state.currentPlayerIdx;
   const ownerTimeline = state.players[ownerIdx].timeline;
   const ownerName = state.players[ownerIdx]?.nickname ?? "Player";
 
