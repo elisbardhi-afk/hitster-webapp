@@ -1,7 +1,8 @@
 import { getServerClient } from "./supabase";
 import { createGame, drawSong } from "./game-rules";
 import type { DeviceMode, GameState, Variant } from "./game-rules-types";
-import { decadeOf, listSongs } from "./songs";
+import { listSongs } from "./songs";
+import { filterSongs } from "./song-filter";
 import type { Card } from "./game-rules-types";
 
 const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // unambiguous
@@ -29,6 +30,7 @@ export async function createRoom(opts: {
   variant: Variant;
   deviceMode: DeviceMode;
   tagFilter: string[];
+  categoryFilter: string[];
 }): Promise<GameRow> {
   const supabase = getServerClient();
 
@@ -60,6 +62,7 @@ export async function createRoom(opts: {
     turnStartedAt: new Date().toISOString(),
     deviceMode: opts.deviceMode,
     tagFilter: opts.tagFilter,
+    categoryFilter: opts.categoryFilter,
   };
 
   const { data, error } = await supabase
@@ -134,16 +137,17 @@ export async function startRoom(opts: { code: string }): Promise<GameRow> {
 
   const allSongs = await listSongs();
   const wantedDecades = room.state.tagFilter ?? [];
-  const songs =
-    wantedDecades.length === 0
-      ? allSongs
-      : allSongs.filter((s) => wantedDecades.includes(decadeOf(s.release_year)));
+  const wantedCategories = room.state.categoryFilter ?? [];
+  const songs = filterSongs(allSongs, wantedDecades, wantedCategories);
 
   if (songs.length < room.state.players.length + 1) {
+    const filters: string[] = [];
+    if (wantedDecades.length > 0) filters.push(`decades: ${wantedDecades.join(", ")}`);
+    if (wantedCategories.length > 0) filters.push(`categories: ${wantedCategories.join(", ")}`);
     throw new Error(
-      wantedDecades.length === 0
+      filters.length === 0
         ? "Not enough songs in catalog"
-        : `Not enough songs in the selected decades (${wantedDecades.join(", ")}). Need at least ${room.state.players.length + 1}, found ${songs.length}.`,
+        : `Not enough songs for the selected filters (${filters.join("; ")}). Need at least ${room.state.players.length + 1}, found ${songs.length}.`,
     );
   }
 
