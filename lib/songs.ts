@@ -45,6 +45,18 @@ export async function listDecades(): Promise<string[]> {
   return Array.from(seen).sort((a, b) => parseInt(a) - parseInt(b));
 }
 
+export async function updateSongTags(id: string, tags: string[]): Promise<Song> {
+  const supabase = getServerClient();
+  const { data, error } = await supabase
+    .from("songs")
+    .update({ tags })
+    .eq("id", id)
+    .select("*")
+    .single();
+  if (error) throw new Error(error.message);
+  return data as Song;
+}
+
 export async function updateSongYear(id: string, releaseYear: number): Promise<Song> {
   const supabase = getServerClient();
   const { data, error } = await supabase
