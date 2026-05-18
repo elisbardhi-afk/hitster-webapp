@@ -56,7 +56,7 @@ The form submits `categoryFilter` as a multi-value field (same pattern as decade
 | `lib/game-rules-types.ts` | Add `categoryFilter?: string[]` to `GameState` |
 | `lib/games.ts` | Update `startRoom()` filtering + accept `categoryFilter` param |
 | `app/online/new/page.tsx` | Add Category section with Albanian Songs checkbox |
-| `app/online/new/actions.ts` (or equivalent server action) | Read and pass `categoryFilter` from form data |
+| `app/online/new/actions.ts` | Read and pass `categoryFilter` from form data |
 
 ## Out of Scope
 
