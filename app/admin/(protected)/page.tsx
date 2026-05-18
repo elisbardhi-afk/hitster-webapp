@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { listSongs } from "@/lib/songs";
-import { deleteSongAction, updateYearAction, toggleTagAction } from "./actions";
+import { deleteSongAction, updateYearAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -54,22 +54,7 @@ export default async function CatalogPage() {
                   </div>
                 )}
               </div>
-              <form action={toggleTagAction} className="flex items-center">
-                <input type="hidden" name="id" value={s.id} />
-                <input type="hidden" name="tag" value="albanian" />
-                <button
-                  type="submit"
-                  className={`text-xs px-2 py-1 border rounded ${
-                    s.tags.includes("albanian")
-                      ? "border-fuchsia-400 text-fuchsia-300 bg-fuchsia-400/10"
-                      : "border-neutral-700 text-neutral-500 hover:text-neutral-300"
-                  }`}
-                  title="Toggle Albanian Songs tag"
-                >
-                  🇦🇱
-                </button>
-              </form>
-              <form action={updateYearAction} className="flex items-center gap-1">
+<form action={updateYearAction} className="flex items-center gap-1">
                 <input type="hidden" name="id" value={s.id} />
                 <input
                   type="number"
