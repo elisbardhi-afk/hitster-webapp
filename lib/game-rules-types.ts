@@ -34,6 +34,8 @@ export type GameState = {
   deviceMode?: DeviceMode;
   /** Online-only: tags chosen at room creation. Empty array = no filter (use full catalog). */
   tagFilter?: string[];
+  /** Online-only: named categories chosen at room creation (e.g. ["albanian"]). Empty = no filter. */
+  categoryFilter?: string[];
   /**
    * Co-op variant only: shared timeline and shared tokens.
    * In co-op, players[0].timeline and players[0].tokens are authoritative.
