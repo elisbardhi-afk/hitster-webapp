@@ -1,6 +1,7 @@
 import Link from "next/link";
+import Image from "next/image";
 import { createRoomAction } from "./actions";
-import { listDecades } from "@/lib/songs";
+import { listPlaylists } from "@/lib/playlists";
 import { GameModeSelect } from "@/components/GameModeSelect";
 import { DeviceModeSelect } from "@/components/DeviceModeSelect";
 
@@ -11,7 +12,8 @@ export default async function CreateOnlineRoomPage({
 }: {
   searchParams: { error?: string };
 }) {
-  const decades = await listDecades();
+  const playlists = await listPlaylists();
+
   return (
     <main className="min-h-screen flex items-start justify-center p-6">
       <form
@@ -36,50 +38,64 @@ export default async function CreateOnlineRoomPage({
         <GameModeSelect />
 
         <fieldset className="space-y-2">
-          <legend className="text-sm text-neutral-300">Category</legend>
-          <div className="flex flex-wrap gap-2">
-            <label className="inline-flex items-center gap-2 rounded-full border border-neutral-700 bg-neutral-950 px-3 py-1.5 text-sm cursor-pointer hover:bg-neutral-900 has-[:checked]:border-fuchsia-400 has-[:checked]:bg-fuchsia-400/10 has-[:checked]:text-fuchsia-100">
+          <legend className="text-sm text-neutral-300">Playlist</legend>
+          <p className="text-xs text-neutral-500">
+            Pick a playlist for the draw pile. Leave on Full Catalog to use all
+            songs.
+          </p>
+          <div className="flex flex-col gap-2">
+            <label className="flex items-center gap-3 rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2.5 cursor-pointer hover:bg-neutral-900 has-[:checked]:border-fuchsia-400 has-[:checked]:bg-fuchsia-400/10">
               <input
-                type="checkbox"
-                name="categoryFilter"
-                value="albanian"
-                className="hidden"
+                type="radio"
+                name="playlistId"
+                value=""
+                defaultChecked
+                className="accent-fuchsia-400 flex-shrink-0"
               />
-              <span>Albanian Songs</span>
-            </label>
-          </div>
-        </fieldset>
-
-        <fieldset className="space-y-2">
-          <legend className="text-sm text-neutral-300">Decades</legend>
-          {decades.length === 0 ? (
-            <p className="text-xs text-neutral-500">
-              No songs in the catalog yet — ask an admin to add some.
-            </p>
-          ) : (
-            <>
-              <p className="text-xs text-neutral-500">
-                Tick the decades you want in the draw pile. Leave all unchecked
-                for every decade.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {decades.map((d) => (
-                  <label
-                    key={d}
-                    className="inline-flex items-center gap-2 rounded-full border border-neutral-700 bg-neutral-950 px-3 py-1.5 text-sm cursor-pointer hover:bg-neutral-900 has-[:checked]:border-fuchsia-400 has-[:checked]:bg-fuchsia-400/10 has-[:checked]:text-fuchsia-100"
-                  >
-                    <input
-                      type="checkbox"
-                      name="tags"
-                      value={d}
-                      className="hidden"
-                    />
-                    <span>{d}</span>
-                  </label>
-                ))}
+              <div className="w-9 h-9 rounded-lg bg-neutral-800 flex-shrink-0 flex items-center justify-center text-lg">
+                🎵
               </div>
-            </>
-          )}
+              <div className="min-w-0">
+                <p className="text-sm font-semibold">Full Catalog</p>
+                <p className="text-xs text-neutral-500">All songs</p>
+              </div>
+            </label>
+
+            {playlists.map((p) => (
+              <label
+                key={p.id}
+                className="flex items-center gap-3 rounded-xl border border-neutral-700 bg-neutral-950 px-3 py-2.5 cursor-pointer hover:bg-neutral-900 has-[:checked]:border-fuchsia-400 has-[:checked]:bg-fuchsia-400/10"
+              >
+                <input
+                  type="radio"
+                  name="playlistId"
+                  value={p.id}
+                  className="accent-fuchsia-400 flex-shrink-0"
+                />
+                {p.cover_image_url ? (
+                  <Image
+                    src={p.cover_image_url}
+                    alt=""
+                    width={36}
+                    height={36}
+                    className="rounded-lg flex-shrink-0 object-cover"
+                    unoptimized
+                  />
+                ) : (
+                  <div className="w-9 h-9 rounded-lg bg-neutral-800 flex-shrink-0 flex items-center justify-center text-lg">
+                    🎵
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold truncate">{p.name}</p>
+                  <p className="text-xs text-neutral-500 truncate">
+                    {p.description ? `${p.description} · ` : ""}
+                    {p.song_count} song{p.song_count === 1 ? "" : "s"}
+                  </p>
+                </div>
+              </label>
+            ))}
+          </div>
         </fieldset>
 
         <DeviceModeSelect />
@@ -90,7 +106,9 @@ export default async function CreateOnlineRoomPage({
           Create room
         </button>
         {searchParams.error && (
-          <p className="text-sm text-red-400">{decodeURIComponent(searchParams.error)}</p>
+          <p className="text-sm text-red-400">
+            {decodeURIComponent(searchParams.error)}
+          </p>
         )}
       </form>
     </main>
