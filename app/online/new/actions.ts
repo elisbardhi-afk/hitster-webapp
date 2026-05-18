@@ -11,14 +11,8 @@ export async function createRoomAction(formData: FormData) {
   const nickname = String(formData.get("nickname") ?? "").trim();
   const variant = String(formData.get("variant") ?? "original") as Variant;
   const deviceMode = String(formData.get("deviceMode") ?? "per-device") as DeviceMode;
-  const tagFilter = formData
-    .getAll("tags")
-    .map((v) => String(v).trim().toLowerCase())
-    .filter((v) => v.length > 0);
-  const categoryFilter = formData
-    .getAll("categoryFilter")
-    .map((v) => String(v).trim().toLowerCase())
-    .filter((v) => v.length > 0);
+  const playlistIdRaw = String(formData.get("playlistId") ?? "").trim();
+  const playlistId = playlistIdRaw.length > 0 ? playlistIdRaw : undefined;
   if (!nickname) {
     redirect(`/online/new?error=${encodeURIComponent("Nickname required")}`);
   }
@@ -34,8 +28,7 @@ export async function createRoomAction(formData: FormData) {
       hostNickname: nickname,
       variant,
       deviceMode,
-      tagFilter,
-      categoryFilter,
+      playlistId,
     });
     // Host's player id is the first (and only) player at creation
     const hostId = room.state.players[0].id;

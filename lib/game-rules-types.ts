@@ -36,6 +36,8 @@ export type GameState = {
   tagFilter?: string[];
   /** Online-only: named categories chosen at room creation (e.g. ["albanian"]). Empty = no filter. */
   categoryFilter?: string[];
+  /** Online-only: playlist selected at room creation. Absent = full catalog. */
+  playlistId?: string;
   /**
    * Co-op variant only: shared timeline and shared tokens.
    * In co-op, players[0].timeline and players[0].tokens are authoritative.

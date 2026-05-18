@@ -2,8 +2,10 @@ import { getServerClient } from "./supabase";
 import { createGame, drawSong } from "./game-rules";
 import type { DeviceMode, GameState, Variant } from "./game-rules-types";
 import { listSongs } from "./songs";
+import type { Song } from "./songs";
 import { filterSongs } from "./song-filter";
 import type { Card } from "./game-rules-types";
+import { listPlaylistSongIds } from "./playlists";
 
 const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // unambiguous
 
@@ -29,8 +31,7 @@ export async function createRoom(opts: {
   hostNickname: string;
   variant: Variant;
   deviceMode: DeviceMode;
-  tagFilter: string[];
-  categoryFilter: string[];
+  playlistId?: string;
 }): Promise<GameRow> {
   const supabase = getServerClient();
 
@@ -61,8 +62,7 @@ export async function createRoom(opts: {
     pendingChallenge: null,
     turnStartedAt: new Date().toISOString(),
     deviceMode: opts.deviceMode,
-    tagFilter: opts.tagFilter,
-    categoryFilter: opts.categoryFilter,
+    playlistId: opts.playlistId,
   };
 
   const { data, error } = await supabase
@@ -136,18 +136,21 @@ export async function startRoom(opts: { code: string }): Promise<GameRow> {
   if (room.state.players.length < 2) throw new Error("Need at least 2 players");
 
   const allSongs = await listSongs();
-  const wantedDecades = room.state.tagFilter ?? [];
-  const wantedCategories = room.state.categoryFilter ?? [];
-  const songs = filterSongs(allSongs, wantedDecades, wantedCategories);
+  const playlistId = room.state.playlistId ?? null;
+
+  let songs: Song[];
+  if (playlistId) {
+    const ids = await listPlaylistSongIds(playlistId);
+    const idSet = new Set(ids);
+    songs = allSongs.filter((s) => idSet.has(s.id));
+  } else {
+    songs = allSongs;
+  }
 
   if (songs.length < room.state.players.length + 1) {
-    const filters: string[] = [];
-    if (wantedDecades.length > 0) filters.push(`decades: ${wantedDecades.join(", ")}`);
-    if (wantedCategories.length > 0) filters.push(`categories: ${wantedCategories.join(", ")}`);
+    const label = playlistId ? "playlist" : "catalog";
     throw new Error(
-      filters.length === 0
-        ? "Not enough songs in catalog"
-        : `Not enough songs for the selected filters (${filters.join("; ")}). Need at least ${room.state.players.length + 1}, found ${songs.length}.`,
+      `Not enough songs in ${label}. Need at least ${room.state.players.length + 1}, found ${songs.length}.`
     );
   }
 
@@ -171,6 +174,7 @@ export async function startRoom(opts: { code: string }): Promise<GameRow> {
     deviceMode: room.state.deviceMode ?? "per-device",
     tagFilter: room.state.tagFilter ?? [],
     categoryFilter: room.state.categoryFilter ?? [],
+    playlistId: room.state.playlistId,
   };
 
   // Immediately draw the first song so player 1 can start.
