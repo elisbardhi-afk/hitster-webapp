@@ -3,7 +3,6 @@ import { createGame, drawSong } from "./game-rules";
 import type { DeviceMode, GameState, Variant } from "./game-rules-types";
 import { listSongs } from "./songs";
 import type { Song } from "./songs";
-import { filterSongs } from "./song-filter";
 import type { Card } from "./game-rules-types";
 import { listPlaylistSongIds } from "./playlists";
 
