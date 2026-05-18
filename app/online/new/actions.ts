@@ -15,6 +15,10 @@ export async function createRoomAction(formData: FormData) {
     .getAll("tags")
     .map((v) => String(v).trim().toLowerCase())
     .filter((v) => v.length > 0);
+  const categoryFilter = formData
+    .getAll("categoryFilter")
+    .map((v) => String(v).trim().toLowerCase())
+    .filter((v) => v.length > 0);
   if (!nickname) {
     redirect(`/online/new?error=${encodeURIComponent("Nickname required")}`);
   }
@@ -31,6 +35,7 @@ export async function createRoomAction(formData: FormData) {
       variant,
       deviceMode,
       tagFilter,
+      categoryFilter,
     });
     // Host's player id is the first (and only) player at creation
     const hostId = room.state.players[0].id;
