@@ -18,6 +18,7 @@ export default async function ProtectedAdminLayout({
         </Link>
         <div className="flex items-center gap-4 text-sm text-neutral-400">
           <Link href="/admin" className="hover:text-neutral-100">Catalog</Link>
+          <Link href="/admin/playlists" className="hover:text-neutral-100">Playlists</Link>
           <Link href="/admin/songs/new" className="hover:text-neutral-100">Add song</Link>
           <Link href="/admin/songs/bulk" className="hover:text-neutral-100">Bulk import</Link>
           <Link href="/admin/qr-sheet" className="hover:text-neutral-100">QR sheet</Link>
