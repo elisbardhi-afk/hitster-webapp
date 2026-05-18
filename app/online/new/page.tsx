@@ -36,6 +36,21 @@ export default async function CreateOnlineRoomPage({
         <GameModeSelect />
 
         <fieldset className="space-y-2">
+          <legend className="text-sm text-neutral-300">Category</legend>
+          <div className="flex flex-wrap gap-2">
+            <label className="inline-flex items-center gap-2 rounded-full border border-neutral-700 bg-neutral-950 px-3 py-1.5 text-sm cursor-pointer hover:bg-neutral-900 has-[:checked]:border-fuchsia-400 has-[:checked]:bg-fuchsia-400/10 has-[:checked]:text-fuchsia-100">
+              <input
+                type="checkbox"
+                name="categoryFilter"
+                value="albanian"
+                className="hidden"
+              />
+              <span>Albanian Songs</span>
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset className="space-y-2">
           <legend className="text-sm text-neutral-300">Decades</legend>
           {decades.length === 0 ? (
             <p className="text-xs text-neutral-500">
