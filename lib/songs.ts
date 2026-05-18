@@ -34,9 +34,7 @@ export async function listTags(): Promise<string[]> {
 }
 
 /** "2015" → "2010s", "1999" → "1990s" */
-export function decadeOf(year: number): string {
-  return `${Math.floor(year / 10) * 10}s`;
-}
+export { decadeOf } from "./song-filter";
 
 /** Distinct decades present in the catalog, sorted chronologically. */
 export async function listDecades(): Promise<string[]> {
