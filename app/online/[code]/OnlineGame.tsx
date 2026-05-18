@@ -100,7 +100,6 @@ export function OnlineGame({ initialRoom, playerId, cards }: Props) {
     const card = cardsByIdRef.current.get(currentSongId);
     if (card?.previewUrl) {
       audio.src = card.previewUrl;
-      audio.play().catch(() => {});
     }
   }, [currentSongId]);
 
