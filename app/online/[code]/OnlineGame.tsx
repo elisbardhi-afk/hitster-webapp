@@ -86,6 +86,8 @@ export function OnlineGame({ initialRoom, playerId, cards }: Props) {
   const [yearGuess, setYearGuess] = useState("");
 
   const audioRef = useRef<HTMLAudioElement>(null);
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const timerStartedRef = useRef(false);
   const currentSongId = state.currentSong?.card.songId ?? null;
 
   // Reset guesses whenever a new song is drawn.
@@ -93,6 +95,8 @@ export function OnlineGame({ initialRoom, playerId, cards }: Props) {
     setArtistGuess("");
     setTitleGuess("");
     setYearGuess("");
+    setTimeLeft(null);
+    timerStartedRef.current = false;
   }, [currentSongId]);
   useEffect(() => {
     const audio = audioRef.current;
@@ -101,9 +105,33 @@ export function OnlineGame({ initialRoom, playerId, cards }: Props) {
     if (card?.previewUrl) {
       audio.src = card.previewUrl;
     }
-  }, [currentSongId]);
+
+    function handlePlay() {
+      if (timerStartedRef.current) return;
+      const limit = state.turnTimer;
+      if (!limit) return;
+      timerStartedRef.current = true;
+      setTimeLeft(limit);
+    }
+
+    audio.addEventListener("play", handlePlay);
+    return () => audio.removeEventListener("play", handlePlay);
+  }, [currentSongId, state.turnTimer]);
 
   const code = room.code;
+  const isShared = state.deviceMode === "shared";
+  const canAct = isShared ? isHost : isMyTurn;
+
+  useEffect(() => {
+    if (timeLeft === null || timeLeft <= 0) return;
+    const id = setTimeout(() => setTimeLeft((t) => (t ?? 1) - 1), 1000);
+    return () => clearTimeout(id);
+  }, [timeLeft]);
+
+  useEffect(() => {
+    if (timeLeft !== 0 || !canAct) return;
+    endTurnAction({ code, playerId }).catch(() => {}).then(() => router.refresh());
+  }, [timeLeft, canAct, code, playerId]);
 
   // ---- LOBBY ----
   if (room.status === "lobby") {
@@ -116,7 +144,6 @@ export function OnlineGame({ initialRoom, playerId, cards }: Props) {
   }
 
   // ---- GAME ----
-  const isShared = state.deviceMode === "shared";
 
   // In shared mode the host's device drives every player's turn.
   // In per-device mode you must be in the room as a player.
@@ -136,8 +163,6 @@ export function OnlineGame({ initialRoom, playerId, cards }: Props) {
       </div>
     );
   }
-
-  const canAct = isShared ? isHost : isMyTurn;
   const currentPlayer = state.players[state.currentPlayerIdx];
   // Active timeline = current player's in both shared and per-device mode.
   // Co-op overrides to players[0].
@@ -234,6 +259,15 @@ export function OnlineGame({ initialRoom, playerId, cards }: Props) {
               <div className="flex flex-col items-center gap-3">
                 <CardFlip card={state.currentSong.card} revealed={state.currentSong.revealed} />
                 <audio ref={audioRef} controls className="w-full max-w-sm" />
+                {canAct && timeLeft !== null && timeLeft > 0 && (
+                  <p
+                    className={`text-sm font-semibold tabular-nums ${
+                      timeLeft <= 10 ? "text-red-400" : "text-neutral-400"
+                    }`}
+                  >
+                    {timeLeft}s remaining
+                  </p>
+                )}
                 {!state.currentSong.revealed && canAct && (
                   <div className="w-full max-w-sm space-y-2">
                     {state.variant === "original" && (
