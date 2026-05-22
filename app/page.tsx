@@ -43,12 +43,6 @@ export default function Home() {
       </div>
 
       <MyRooms />
-
-      <footer className="text-xs text-neutral-500">
-        <Link href="/admin" className="hover:text-neutral-300">
-          admin
-        </Link>
-      </footer>
     </main>
   );
 }
