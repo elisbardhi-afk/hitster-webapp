@@ -90,7 +90,7 @@ const REFERENCE = [
   { title: "Beautiful", artist: "Christina Aguilera" },
   { title: "Since U Been Gone", artist: "Kelly Clarkson" },
   { title: "99 Problems", artist: "Jay-Z" },
-  { title: "Big Pimpin'", artist: "Jay-Z" },
+  { title: "Izzo (H.O.V.A.)", artist: "Jay-Z" },
   { title: "Bootylicious", artist: "Destiny's Child" },
   { title: "Survivor", artist: "Destiny's Child" },
   // 2005–2009
@@ -167,7 +167,7 @@ const REFERENCE = [
   // 2015–2019
   { title: "Can't Feel My Face", artist: "The Weeknd" },
   { title: "Starboy", artist: "The Weeknd" },
-  { title: "The Hills", artist: "The Weeknd" },
+  { title: "Blinding Lights", artist: "The Weeknd" },
   { title: "Shape of You", artist: "Ed Sheeran" },
   { title: "Perfect", artist: "Ed Sheeran" },
   { title: "Castle on the Hill", artist: "Ed Sheeran" },
@@ -199,7 +199,7 @@ const REFERENCE = [
   { title: "Truth Hurts", artist: "Lizzo" },
   { title: "Good as Hell", artist: "Lizzo" },
   { title: "This Is America", artist: "Childish Gambino" },
-  { title: "Senorita", artist: "Shawn Mendes" },
+  { title: "Señorita", artist: "Shawn Mendes" },
   { title: "Havana", artist: "Camila Cabello" },
   { title: "Lucid Dreams", artist: "Juice WRLD" },
   { title: "Congratulations", artist: "Post Malone" },
