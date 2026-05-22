@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useMemo } from "react";
 import Image from "next/image";
 import { updatePlaylistSongsAction } from "@/app/admin/(protected)/playlists/actions";
 import type { Song } from "@/lib/songs";
@@ -20,12 +20,20 @@ export function PlaylistSongsEditor({
   const [query, setQuery] = useState("");
   const [isPending, startTransition] = useTransition();
 
-  const filtered = songs.filter(
-    (s) =>
-      query === "" ||
-      s.title.toLowerCase().includes(query.toLowerCase()) ||
-      s.artist.toLowerCase().includes(query.toLowerCase())
-  );
+  const initialSet = useMemo(() => new Set(initialSongIds), [initialSongIds]);
+
+  const filtered = songs
+    .filter(
+      (s) =>
+        query === "" ||
+        s.title.toLowerCase().includes(query.toLowerCase()) ||
+        s.artist.toLowerCase().includes(query.toLowerCase())
+    )
+    .sort((a, b) => {
+      const ai = initialSet.has(a.id) ? 0 : 1;
+      const bi = initialSet.has(b.id) ? 0 : 1;
+      return ai - bi;
+    });
 
   const allFilteredChecked =
     filtered.length > 0 && filtered.every((s) => checked.has(s.id));
