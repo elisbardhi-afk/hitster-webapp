@@ -316,3 +316,203 @@ async function fetchPreviewFromEmbed(trackId) {
     return null;
   }
 }
+
+// ---------------------------------------------------------------------------
+// Main
+// ---------------------------------------------------------------------------
+async function main() {
+  // 1. Look up or create the "Top 2000s and Now" playlist
+  let { data: playlist, error: playlistError } = await supabase
+    .from("playlists")
+    .select("id")
+    .eq("name", "Top 2000s and Now")
+    .maybeSingle();
+  if (playlistError) {
+    console.error("Failed to look up playlist:", playlistError.message);
+    process.exit(1);
+  }
+  if (!playlist) {
+    console.log('Looking up "Top 2000s and Now" playlist... not found. Creating it.');
+    const { data: created, error: createError } = await supabase
+      .from("playlists")
+      .insert({ name: "Top 2000s and Now", description: "" })
+      .select("id")
+      .single();
+    if (createError) {
+      console.error("Failed to create playlist:", createError.message);
+      process.exit(1);
+    }
+    playlist = created;
+  } else {
+    console.log('Looking up "Top 2000s and Now" playlist... found.');
+  }
+
+  // 2. Read current playlist song IDs
+  const { data: existingRows, error: existingError } = await supabase
+    .from("playlist_songs")
+    .select("song_id")
+    .eq("playlist_id", playlist.id);
+  if (existingError) {
+    console.error("Failed to read playlist songs:", existingError.message);
+    process.exit(1);
+  }
+  const playlistSongIds = new Set(existingRows.map((r) => r.song_id));
+  console.log(`(${playlistSongIds.size} songs already in it).`);
+
+  // 3. Read full catalog into a normalize-keyed map
+  const { data: songs, error: songsError } = await supabase
+    .from("songs")
+    .select("id, title, artist");
+  if (songsError) {
+    console.error("Failed to read catalog:", songsError.message);
+    process.exit(1);
+  }
+  const catalogMap = new Map();
+  for (const song of songs) {
+    catalogMap.set(
+      `${normalize(song.title)}||${normalize(song.artist)}`,
+      song
+    );
+  }
+  console.log(`Loading catalog... ${songs.length} songs.`);
+
+  // 4. Get Spotify token
+  const token = await getSpotifyToken();
+
+  // 5. Process each reference song
+  console.log(`\nProcessing ${REFERENCE.length} reference songs...\n`);
+  let countAlready = 0;
+  let countFromCatalog = 0;
+  let countImported = 0;
+  let countNoPreview = 0;
+  let countNotFound = 0;
+  let countErrors = 0;
+
+  for (const ref of REFERENCE) {
+    const key = `${normalize(ref.title)}||${normalize(ref.artist)}`;
+    const catalogSong = catalogMap.get(key);
+
+    // Already in playlist
+    if (catalogSong && playlistSongIds.has(catalogSong.id)) {
+      console.log(`✓ already      ${ref.title} — ${ref.artist}`);
+      countAlready++;
+      continue;
+    }
+
+    // In catalog but not yet in playlist
+    if (catalogSong) {
+      const { error } = await supabase
+        .from("playlist_songs")
+        .insert({ playlist_id: playlist.id, song_id: catalogSong.id });
+      if (error) {
+        console.error(`  ✗ error adding ${ref.title}: ${error.message}`);
+        countErrors++;
+      } else {
+        console.log(`✓ from catalog ${ref.title} — ${ref.artist}`);
+        playlistSongIds.add(catalogSong.id);
+        countFromCatalog++;
+      }
+      continue;
+    }
+
+    // Not in catalog — search Spotify (rate-limit delay)
+    await new Promise((r) => setTimeout(r, 200));
+    const track = await searchSpotifyTrack(ref.title, ref.artist, token);
+    if (!track) {
+      console.log(`✗ not found    ${ref.title} — ${ref.artist}`);
+      countNotFound++;
+      continue;
+    }
+
+    // Resolve preview URL: API first, embed page fallback
+    let previewUrl = track.preview_url ?? null;
+    if (!previewUrl) previewUrl = await fetchPreviewFromEmbed(track.id);
+    if (!previewUrl) {
+      console.log(`✗ no preview   ${ref.title} — ${ref.artist}`);
+      countNoPreview++;
+      continue;
+    }
+
+    // Upsert into catalog
+    const releaseYear = parseInt(track.album.release_date.slice(0, 4), 10);
+    const albumArtUrl =
+      track.album.images.find((i) => i.width >= 200)?.url ??
+      track.album.images[0]?.url ??
+      null;
+
+    const { data: upserted, error: upsertError } = await supabase
+      .from("songs")
+      .upsert(
+        {
+          spotify_id: track.id,
+          title: track.name,
+          artist: track.artists.map((a) => a.name).join(", "),
+          release_year: releaseYear,
+          preview_url: previewUrl,
+          album_art_url: albumArtUrl,
+          tags: [],
+        },
+        { onConflict: "spotify_id", ignoreDuplicates: true }
+      )
+      .select("id")
+      .maybeSingle();
+
+    let songId;
+    if (upsertError) {
+      console.error(`  ✗ import error ${ref.title}: ${upsertError.message}`);
+      countErrors++;
+      continue;
+    } else if (!upserted) {
+      // Row already existed (ignoreDuplicates returned nothing) — fetch it
+      const { data: existing, error: fetchError } = await supabase
+        .from("songs")
+        .select("id")
+        .eq("spotify_id", track.id)
+        .single();
+      if (fetchError) {
+        console.error(`  ✗ fetch error ${ref.title}: ${fetchError.message}`);
+        countErrors++;
+        continue;
+      }
+      songId = existing.id;
+    } else {
+      songId = upserted.id;
+    }
+
+    // Add to playlist
+    const { error: insertError } = await supabase
+      .from("playlist_songs")
+      .insert({ playlist_id: playlist.id, song_id: songId });
+    if (insertError) {
+      console.error(
+        `  ✗ playlist insert error ${ref.title}: ${insertError.message}`
+      );
+      countErrors++;
+      continue;
+    }
+
+    console.log(
+      `✓ imported     ${ref.title} — ${ref.artist}  (spotify:track:${track.id})`
+    );
+    playlistSongIds.add(songId);
+    countImported++;
+  }
+
+  // 6. Summary
+  const bar = "─".repeat(41);
+  console.log(`\n${bar}`);
+  console.log(`Already in playlist:   ${String(countAlready).padStart(4)}`);
+  console.log(`Added from catalog:    ${String(countFromCatalog).padStart(4)}`);
+  console.log(`Imported from Spotify: ${String(countImported).padStart(4)}`);
+  console.log(`Skipped (no preview):  ${String(countNoPreview).padStart(4)}`);
+  console.log(`Not found on Spotify:  ${String(countNotFound).padStart(4)}`);
+  console.log(`Errors:                ${String(countErrors).padStart(4)}`);
+  console.log(bar);
+  console.log(`"Top 2000s and Now" playlist now has ${playlistSongIds.size} songs.`);
+  console.log(`Edit it at: /admin/playlists/${playlist.id}`);
+}
+
+main().catch((err) => {
+  console.error("Fatal:", err);
+  process.exit(1);
+});
