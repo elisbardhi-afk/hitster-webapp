@@ -242,3 +242,77 @@ const REFERENCE = [
   { title: "Beautiful Things", artist: "Benson Boone" },
   { title: "Stick Season", artist: "Noah Kahan" },
 ];
+
+// ---------------------------------------------------------------------------
+// Spotify helpers
+// ---------------------------------------------------------------------------
+
+async function getSpotifyToken() {
+  const clientId = process.env.SPOTIFY_CLIENT_ID;
+  const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
+  if (!clientId || !clientSecret) {
+    throw new Error(
+      "Missing SPOTIFY_CLIENT_ID or SPOTIFY_CLIENT_SECRET in .env.local"
+    );
+  }
+  const basic = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
+  const res = await fetch("https://accounts.spotify.com/api/token", {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${basic}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: "grant_type=client_credentials",
+  });
+  if (!res.ok) throw new Error(`Spotify token request failed: ${res.status}`);
+  const data = await res.json();
+  return data.access_token;
+}
+
+// Returns the first Spotify track matching title + artist, or null.
+async function searchSpotifyTrack(title, artist, token) {
+  const q = encodeURIComponent(`track:"${title}" artist:"${artist}"`);
+  const res = await fetch(
+    `https://api.spotify.com/v1/search?q=${q}&type=track&limit=1`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  if (!res.ok) {
+    process.stderr.write(`  search API error ${res.status} for "${title}" — skipping\n`);
+    return null;
+  }
+  let data;
+  try {
+    data = await res.json();
+  } catch {
+    return null;
+  }
+  return data.tracks?.items?.[0] ?? null;
+}
+
+// Scrapes the Spotify embed page for a preview URL when the API returns null.
+async function fetchPreviewFromEmbed(trackId) {
+  try {
+    const res = await fetch(
+      `https://open.spotify.com/embed/track/${trackId}`,
+      {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        },
+      }
+    );
+    if (!res.ok) return null;
+    const html = await res.text();
+    const m = html.match(/"audioPreview"\s*:\s*\{[^}]*"url"\s*:\s*"([^"]+)"/);
+    if (m) {
+      try { return decodeURIComponent(m[1].replace(/\\u002F/g, "/")); } catch { return null; }
+    }
+    const m2 = html.match(/"previewUrl"\s*:\s*"([^"]+)"/);
+    if (m2) {
+      try { return decodeURIComponent(m2[1].replace(/\\u002F/g, "/")); } catch { return null; }
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
