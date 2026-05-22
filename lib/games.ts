@@ -31,6 +31,7 @@ export async function createRoom(opts: {
   variant: Variant;
   deviceMode: DeviceMode;
   playlistId?: string;
+  turnTimer?: 30 | 60 | null;
 }): Promise<GameRow> {
   const supabase = getServerClient();
 
@@ -62,6 +63,7 @@ export async function createRoom(opts: {
     turnStartedAt: new Date().toISOString(),
     deviceMode: opts.deviceMode,
     playlistId: opts.playlistId,
+    turnTimer: opts.turnTimer ?? null,
   };
 
   const { data, error } = await supabase

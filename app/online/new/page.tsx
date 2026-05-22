@@ -4,6 +4,7 @@ import { createRoomAction } from "./actions";
 import { listPlaylists } from "@/lib/playlists";
 import { GameModeSelect } from "@/components/GameModeSelect";
 import { DeviceModeSelect } from "@/components/DeviceModeSelect";
+import { TimerSelect } from "@/components/TimerSelect";
 
 export const dynamic = "force-dynamic";
 
@@ -36,6 +37,7 @@ export default async function CreateOnlineRoomPage({
           />
         </label>
         <GameModeSelect />
+        <TimerSelect />
 
         <fieldset className="space-y-2">
           <legend className="text-sm text-neutral-300">Playlist</legend>

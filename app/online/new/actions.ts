@@ -13,6 +13,9 @@ export async function createRoomAction(formData: FormData) {
   const deviceMode = String(formData.get("deviceMode") ?? "per-device") as DeviceMode;
   const playlistIdRaw = String(formData.get("playlistId") ?? "").trim();
   const playlistId = playlistIdRaw.length > 0 ? playlistIdRaw : undefined;
+  const rawTimer = String(formData.get("turnTimer") ?? "").trim();
+  const turnTimer: 30 | 60 | null =
+    rawTimer === "30" ? 30 : rawTimer === "60" ? 60 : null;
   if (!nickname) {
     redirect(`/online/new?error=${encodeURIComponent("Nickname required")}`);
   }
@@ -29,6 +32,7 @@ export async function createRoomAction(formData: FormData) {
       variant,
       deviceMode,
       playlistId,
+      turnTimer,
     });
     // Host's player id is the first (and only) player at creation
     const hostId = room.state.players[0].id;
