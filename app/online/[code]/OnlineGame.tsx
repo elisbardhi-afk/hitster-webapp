@@ -130,8 +130,11 @@ export function OnlineGame({ initialRoom, playerId, cards }: Props) {
 
   useEffect(() => {
     if (timeLeft !== 0 || !canAct) return;
-    endTurnAction({ code, playerId }).catch(() => {}).then(() => router.refresh());
-  }, [timeLeft, canAct, code, playerId]);
+    setTimeLeft(null);
+    endTurnAction({ code, playerId })
+      .then(() => router.refresh())
+      .catch((err) => console.error("Auto end-turn failed:", err));
+  }, [timeLeft, canAct, code, playerId, router]);
 
   // ---- LOBBY ----
   if (room.status === "lobby") {
