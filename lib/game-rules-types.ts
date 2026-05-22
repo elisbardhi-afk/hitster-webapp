@@ -38,6 +38,8 @@ export type GameState = {
   categoryFilter?: string[];
   /** Online-only: playlist selected at room creation. Absent = full catalog. */
   playlistId?: string;
+  /** Online-only: per-turn countdown in seconds. null = no limit. Absent = no limit (back-compat). */
+  turnTimer?: 30 | 60 | null;
   /**
    * Co-op variant only: shared timeline and shared tokens.
    * In co-op, players[0].timeline and players[0].tokens are authoritative.
