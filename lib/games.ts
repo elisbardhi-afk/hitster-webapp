@@ -176,6 +176,7 @@ export async function startRoom(opts: { code: string }): Promise<GameRow> {
     tagFilter: room.state.tagFilter ?? [],
     categoryFilter: room.state.categoryFilter ?? [],
     playlistId: room.state.playlistId,
+    turnTimer: room.state.turnTimer ?? null,
   };
 
   // Immediately draw the first song so player 1 can start.
