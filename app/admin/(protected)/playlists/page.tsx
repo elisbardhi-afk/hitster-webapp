@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { listPlaylists } from "@/lib/playlists";
-import { deletePlaylistAction } from "./actions";
+import { DeletePlaylistButton } from "@/components/DeletePlaylistButton";
 
 export const dynamic = "force-dynamic";
 
@@ -72,15 +72,7 @@ export default async function PlaylistsPage() {
                 >
                   Edit
                 </Link>
-                <form action={deletePlaylistAction}>
-                  <input type="hidden" name="id" value={p.id} />
-                  <button
-                    type="submit"
-                    className="text-xs text-red-300 hover:text-red-200 px-2 py-1"
-                  >
-                    Delete
-                  </button>
-                </form>
+                <DeletePlaylistButton playlistId={p.id} playlistName={p.name} />
               </div>
             </li>
           ))}
