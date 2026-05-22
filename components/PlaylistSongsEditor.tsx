@@ -27,11 +27,26 @@ export function PlaylistSongsEditor({
       s.artist.toLowerCase().includes(query.toLowerCase())
   );
 
+  const allFilteredChecked =
+    filtered.length > 0 && filtered.every((s) => checked.has(s.id));
+
   function toggle(id: string) {
     setChecked((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleSelectAll() {
+    setChecked((prev) => {
+      const next = new Set(prev);
+      if (allFilteredChecked) {
+        filtered.forEach((s) => next.delete(s.id));
+      } else {
+        filtered.forEach((s) => next.add(s.id));
+      }
       return next;
     });
   }
@@ -49,13 +64,24 @@ export function PlaylistSongsEditor({
         <span className="text-xs font-semibold uppercase tracking-widest text-neutral-500">
           Songs — {checked.size} selected
         </span>
-        <input
-          type="text"
-          placeholder="Search title or artist…"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="rounded-lg border border-neutral-700 bg-neutral-950 px-3 py-1.5 text-sm outline-none focus:border-neutral-400 w-52"
-        />
+        <div className="flex items-center gap-2">
+          {filtered.length > 0 && (
+            <button
+              type="button"
+              onClick={toggleSelectAll}
+              className="text-xs text-neutral-400 hover:text-neutral-200 underline underline-offset-2"
+            >
+              {allFilteredChecked ? "Deselect all" : "Select all"}
+            </button>
+          )}
+          <input
+            type="text"
+            placeholder="Search title or artist…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="rounded-lg border border-neutral-700 bg-neutral-950 px-3 py-1.5 text-sm outline-none focus:border-neutral-400 w-52"
+          />
+        </div>
       </div>
 
       <div className="flex flex-col gap-1 max-h-96 overflow-y-auto">
