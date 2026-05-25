@@ -243,7 +243,7 @@ export function placeCard(
   }
 
   // Award PRO/Expert tokens for naming bonuses where applicable, even on miss (per official rules for "original" — for PRO/Expert, naming is required to keep the card, no separate bonus).
-  if (state.variant === "original" && bonuses.titleCorrect && bonuses.artistCorrect) {
+  if (state.variant === "original" && bonuses.artistCorrect) {
     const tokens = clampTokens(players[ownerIdx].tokens + 1);
     players = replacePlayer(players, ownerIdx, { tokens });
   }
