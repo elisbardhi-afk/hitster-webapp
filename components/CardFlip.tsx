@@ -10,14 +10,15 @@ type Props = {
 };
 
 export function CardFlip({ card, revealed }: Props) {
-  const [isFlipping, setIsFlipping] = useState(false);
+  const [hideContent, setHideContent] = useState(false);
   const prevRevealed = useRef(revealed);
 
   useEffect(() => {
-    if (prevRevealed.current !== revealed) {
-      prevRevealed.current = revealed;
-      setIsFlipping(true);
-      const timer = setTimeout(() => setIsFlipping(false), 700);
+    const wasRevealed = prevRevealed.current;
+    prevRevealed.current = revealed;
+    if (wasRevealed && !revealed) {
+      setHideContent(true);
+      const timer = setTimeout(() => setHideContent(false), 700);
       return () => clearTimeout(timer);
     }
   }, [revealed]);
@@ -32,11 +33,11 @@ export function CardFlip({ card, revealed }: Props) {
       >
         {/* Front: hidden info */}
         <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-fuchsia-700 to-amber-500 flex items-center justify-center text-4xl font-bold [backface-visibility:hidden]">
-          {!isFlipping && "?"}
+          {!hideContent && "?"}
         </div>
         {/* Back: title / artist / year */}
         <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-neutral-800 to-neutral-900 border border-neutral-700 p-4 flex flex-col justify-between [transform:rotateY(180deg)] [backface-visibility:hidden]">
-          {!isFlipping && (
+          {!hideContent && (
             <>
               <div className="text-xs uppercase tracking-widest text-neutral-500">
                 now playing
