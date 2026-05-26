@@ -10,15 +10,14 @@ type Props = {
 };
 
 export function CardFlip({ card, revealed }: Props) {
-  const [blackout, setBlackout] = useState(false);
+  const [isFlipping, setIsFlipping] = useState(false);
   const prevRevealed = useRef(revealed);
 
   useEffect(() => {
-    const wasRevealed = prevRevealed.current;
-    prevRevealed.current = revealed;
-    if (wasRevealed && !revealed) {
-      setBlackout(true);
-      const timer = setTimeout(() => setBlackout(false), 700);
+    if (prevRevealed.current !== revealed) {
+      prevRevealed.current = revealed;
+      setIsFlipping(true);
+      const timer = setTimeout(() => setIsFlipping(false), 700);
       return () => clearTimeout(timer);
     }
   }, [revealed]);
@@ -47,8 +46,8 @@ export function CardFlip({ card, revealed }: Props) {
           <div className="text-3xl font-bold text-amber-300">{card.year}</div>
         </div>
       </div>
-      {/* Black overlay during flip-back to prevent glimpsing the next song */}
-      {blackout && (
+      {/* Black overlay for the full duration of any flip */}
+      {isFlipping && (
         <div className="absolute inset-0 rounded-2xl bg-black z-10 pointer-events-none" />
       )}
     </div>
