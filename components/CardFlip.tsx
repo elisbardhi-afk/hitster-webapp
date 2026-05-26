@@ -2,6 +2,7 @@
 
 import clsx from "clsx";
 import type { Card } from "@/lib/game-rules-types";
+import { useEffect, useRef, useState } from "react";
 
 type Props = {
   card: Card;
@@ -9,6 +10,19 @@ type Props = {
 };
 
 export function CardFlip({ card, revealed }: Props) {
+  const [blackout, setBlackout] = useState(false);
+  const prevRevealed = useRef(revealed);
+
+  useEffect(() => {
+    const wasRevealed = prevRevealed.current;
+    prevRevealed.current = revealed;
+    if (wasRevealed && !revealed) {
+      setBlackout(true);
+      const timer = setTimeout(() => setBlackout(false), 700);
+      return () => clearTimeout(timer);
+    }
+  }, [revealed]);
+
   return (
     <div className="relative w-44 h-60 [perspective:1000px]">
       <div
@@ -33,6 +47,10 @@ export function CardFlip({ card, revealed }: Props) {
           <div className="text-3xl font-bold text-amber-300">{card.year}</div>
         </div>
       </div>
+      {/* Black overlay during flip-back to prevent glimpsing the next song */}
+      {blackout && (
+        <div className="absolute inset-0 rounded-2xl bg-black z-10 pointer-events-none" />
+      )}
     </div>
   );
 }
