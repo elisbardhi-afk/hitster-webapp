@@ -33,7 +33,7 @@ export function CardFlip({ card, revealed }: Props) {
       >
         {/* Front: hidden info */}
         <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-fuchsia-700 to-amber-500 flex items-center justify-center text-4xl font-bold [backface-visibility:hidden]">
-          {!hideContent && "?"}
+          Hitster
         </div>
         {/* Back: title / artist / year */}
         <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-neutral-800 to-neutral-900 border border-neutral-700 p-4 flex flex-col justify-between [transform:rotateY(180deg)] [backface-visibility:hidden]">
