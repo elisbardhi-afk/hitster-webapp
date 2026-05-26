@@ -32,24 +32,24 @@ export function CardFlip({ card, revealed }: Props) {
       >
         {/* Front: hidden info */}
         <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-fuchsia-700 to-amber-500 flex items-center justify-center text-4xl font-bold [backface-visibility:hidden]">
-          ?
+          {!isFlipping && "?"}
         </div>
         {/* Back: title / artist / year */}
         <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-neutral-800 to-neutral-900 border border-neutral-700 p-4 flex flex-col justify-between [transform:rotateY(180deg)] [backface-visibility:hidden]">
-          <div className="text-xs uppercase tracking-widest text-neutral-500">
-            now playing
-          </div>
-          <div>
-            <div className="text-base font-semibold leading-tight">{card.title}</div>
-            <div className="text-sm text-neutral-400">{card.artist}</div>
-          </div>
-          <div className="text-3xl font-bold text-amber-300">{card.year}</div>
+          {!isFlipping && (
+            <>
+              <div className="text-xs uppercase tracking-widest text-neutral-500">
+                now playing
+              </div>
+              <div>
+                <div className="text-base font-semibold leading-tight">{card.title}</div>
+                <div className="text-sm text-neutral-400">{card.artist}</div>
+              </div>
+              <div className="text-3xl font-bold text-amber-300">{card.year}</div>
+            </>
+          )}
         </div>
       </div>
-      {/* Black overlay for the full duration of any flip */}
-      {isFlipping && (
-        <div className="absolute inset-0 rounded-2xl bg-black z-10 pointer-events-none" />
-      )}
     </div>
   );
 }
